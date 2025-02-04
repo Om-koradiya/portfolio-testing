@@ -3,6 +3,11 @@ import { Text3D, OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { Suspense, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { LayerMaterial, Depth, Fresnel } from 'lamina';
+import { extend } from '@react-three/fiber';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
+
+extend({ TextGeometry });
+
 
 function WaterParticles({ count = 1000 }) {
   const positions = useMemo(() => {
