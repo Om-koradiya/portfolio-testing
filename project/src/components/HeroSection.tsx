@@ -1,13 +1,12 @@
 import { Canvas, useFrame, extend, useThree } from '@react-three/fiber';
-import { Text3D, OrbitControls, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { Suspense, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { LayerMaterial, Depth, Fresnel } from 'lamina';
-import { extend } from '@react-three/fiber';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 
+// Extend TextGeometry for React Three Fiber
 extend({ TextGeometry });
-
 
 function WaterParticles({ count = 1000 }) {
   const positions = useMemo(() => {
@@ -20,15 +19,15 @@ function WaterParticles({ count = 1000 }) {
     return pos;
   }, [count]);
 
-  const particlesRef = useRef<THREE.Points>(null);
+  const particlesRef = useRef(null);
 
   useFrame((state) => {
     if (particlesRef.current) {
-      const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+      const positions = particlesRef.current.geometry.attributes.position.array;
       for (let i = 0; i < positions.length; i += 3) {
         positions[i] -= 0.1; // Move particles left
         if (positions[i] < -20) positions[i] = 20; // Reset position when too far left
-        
+
         // Add wave motion
         positions[i + 1] += Math.sin(state.clock.elapsedTime + positions[i]) * 0.01;
         positions[i + 2] += Math.cos(state.clock.elapsedTime + positions[i]) * 0.01;
@@ -59,13 +58,13 @@ function WaterParticles({ count = 1000 }) {
 }
 
 function WaterEffect() {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef(null);
   const { viewport } = useThree();
 
   const geometry = useMemo(() => {
     const geo = new THREE.PlaneGeometry(viewport.width * 2, viewport.height * 2, 128, 128);
     const pos = geo.attributes.position;
-    const pa = pos.array as Float32Array;
+    const pa = pos.array;
     for (let i = 0; i < pa.length; i += 3) {
       pa[i + 2] = Math.sin(pa[i] / 2) * 0.2;
     }
@@ -83,29 +82,16 @@ function WaterEffect() {
   return (
     <mesh ref={meshRef} geometry={geometry} position={[15, 0, -5]} rotation={[-Math.PI / 4, 0, 0]}>
       <LayerMaterial side={THREE.DoubleSide} transparent opacity={0.7}>
-        <Depth
-          colorA="#00ffff"
-          colorB="#00a6ff"
-          alpha={1}
-          mode="normal"
-          near={0}
-          far={2}
-          origin={[1, 1, 1]}
-        />
-        <Fresnel
-          mode="add"
-          color="#ffffff"
-          intensity={0.3}
-          power={2}
-          bias={0.1}
-        />
+        <Depth colorA="#00ffff" colorB="#00a6ff" alpha={1} mode="normal" near={0} far={2} origin={[1, 1, 1]} />
+        <Fresnel mode="add" color="#ffffff" intensity={0.3} power={2} bias={0.1} />
       </LayerMaterial>
     </mesh>
   );
 }
 
 function TextMesh() {
-  const textRef = useRef<THREE.Group>(null);
+  const textRef = useRef(null);
+  const font = '/fonts/helvetiker_regular.typeface.json'; // Use correct font file
 
   useFrame(({ clock }) => {
     if (textRef.current) {
@@ -121,6 +107,7 @@ function TextMesh() {
           args={[
             'dm',
             {
+              font,
               size: 3,
               height: 0.2,
               curveSegments: 12,
@@ -132,17 +119,14 @@ function TextMesh() {
             }
           ]}
         />
-        <meshStandardMaterial
-          color="white"
-          metalness={0.8}
-          roughness={0.2}
-        />
+        <meshStandardMaterial color="white" metalness={0.8} roughness={0.2} />
       </mesh>
       <mesh position={[-12, -2, 0]}>
         <textGeometry
           args={[
             'Hangover',
             {
+              font,
               size: 3,
               height: 0.2,
               curveSegments: 12,
@@ -154,11 +138,7 @@ function TextMesh() {
             }
           ]}
         />
-        <meshStandardMaterial
-          color="white"
-          metalness={0.8}
-          roughness={0.2}
-        />
+        <meshStandardMaterial color="white" metalness={0.8} roughness={0.2} />
       </mesh>
     </group>
   );
@@ -178,8 +158,6 @@ function Scene() {
     </>
   );
 }
-
-extend({ TextGeometry: THREE.TextGeometry });
 
 export default function HeroSection() {
   return (
